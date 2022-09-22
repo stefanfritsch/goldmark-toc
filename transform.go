@@ -1,6 +1,7 @@
 package toc
 
 import (
+	fencedcontainers "git.statup.company/stefanfritsch/go-markdown-renderer/goldmark-fenced-containers"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/parser"
 	"github.com/yuin/goldmark/text"
@@ -50,15 +51,28 @@ func (t *Transformer) Transform(doc *ast.Document, reader text.Reader, pctx pars
 		return
 	}
 
-	doc.InsertBefore(doc, doc.FirstChild(), RenderList(toc))
+	if true {
+		node := fencedcontainers.NewFencedContainer()
+		node.SetAttributeString("id", []byte("md-toc"))
+		node.SetAttributeString("class", []byte("toc nav elem-nav"))
+		insertTOC(node, toc, t.Title)
 
-	title := t.Title
+		doc.InsertBefore(doc, doc.FirstChild(), node)
+	} else {
+		insertTOC(doc, toc, t.Title)
+		// doc.InsertBefore(doc, doc.FirstChild(), tocList)
+	}
+}
+
+func insertTOC(node ast.Node, toc *TOC, title string) {
+	tocList := RenderList(toc)
+
+	node.InsertBefore(node, node.FirstChild(), tocList)
+
 	if len(title) == 0 {
 		title = _defaultTitle
 	}
-
 	heading := ast.NewHeading(1)
 	heading.AppendChild(heading, ast.NewString([]byte(title)))
-
-	doc.InsertBefore(doc, doc.FirstChild(), heading)
+	node.InsertBefore(node, node.FirstChild(), heading)
 }

@@ -48,6 +48,7 @@ func (r *ListRenderer) renderItems(items Items) ast.Node {
 	}
 
 	list := ast.NewList(mkr)
+	list.SetAttributeString("class", []byte("nav-item"))
 	for _, item := range items {
 		list.AppendChild(list, r.renderItem(item))
 	}
@@ -64,6 +65,8 @@ func (r *ListRenderer) renderItem(n *Item) ast.Node {
 			link := ast.NewLink()
 			link.Destination = append([]byte("#"), n.ID...)
 			link.AppendChild(link, title)
+			link.SetAttributeString("class", []byte("nav-link"))
+
 			item.AppendChild(item, link)
 		} else {
 			item.AppendChild(item, title)
