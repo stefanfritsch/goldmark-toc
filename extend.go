@@ -31,6 +31,7 @@ type Extender struct {
 	Title     string
 	AddFences bool
 	FencesID  string
+	PruneTOC  bool
 }
 
 // Extend adds support for rendering a table of contents to the provided
@@ -38,7 +39,7 @@ type Extender struct {
 func (e *Extender) Extend(md goldmark.Markdown) {
 	md.Parser().AddOptions(
 		parser.WithASTTransformers(
-			util.Prioritized(&Transformer{Title: e.Title, AddFences: e.AddFences, FencesID: e.FencesID}, 100),
+			util.Prioritized(&Transformer{Title: e.Title, AddFences: e.AddFences, FencesID: e.FencesID, PruneTOC: e.PruneTOC}, 100),
 		),
 	)
 }

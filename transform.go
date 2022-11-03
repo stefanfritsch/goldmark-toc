@@ -32,7 +32,7 @@ type Transformer struct {
 	Title     string
 	AddFences bool   // Wrap the toc in a div
 	FencesID  string // html-id for the wrapping div if AddFences=true. Default is #md-toc
-	PruneToc  bool   // if true remove wrapping lists for heading levels above the highest heading (e.g. if you don't have an h1 heading we won't render a list for h1 headings)
+	PruneTOC  bool   // if true remove wrapping lists for heading levels above the highest heading (e.g. if you don't have an h1 heading we won't render a list for h1 headings)
 }
 
 var _ parser.ASTTransformer = (*Transformer)(nil) // interface compliance
@@ -42,7 +42,7 @@ var _ parser.ASTTransformer = (*Transformer)(nil) // interface compliance
 // Errors encountered while transforming are ignored. For more fine-grained
 // control, use Inspect and transform the document manually.
 func (t *Transformer) Transform(doc *ast.Document, reader text.Reader, pctx parser.Context) {
-	toc, err := Inspect(doc, reader.Source(), &NewInspectOption{pruneToc: t.PruneToc})
+	toc, err := Inspect(doc, reader.Source(), &NewInspectOption{pruneTOC: t.PruneTOC})
 	if err != nil {
 		// There are currently no scenarios under which Inspect
 		// returns an error but we have to account for it anyway.

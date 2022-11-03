@@ -1,6 +1,8 @@
 package toc
 
 import (
+	"fmt"
+
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/util"
 )
@@ -10,15 +12,15 @@ import (
 // This type is currently just a placeholder to prevent breaking changes to
 // the API in the future. There are no InspectOptions at this time.
 type InspectOption interface {
-	PruneToc() bool
+	PruneTOC() bool
 }
 
 type NewInspectOption struct {
-	pruneToc bool
+	pruneTOC bool
 }
 
-func (o *NewInspectOption) PruneToc() bool {
-	return o.pruneToc
+func (o *NewInspectOption) PruneTOC() bool {
+	return o.pruneTOC
 }
 
 // Inspect builds a table of contents by inspecting the provided document.
@@ -53,6 +55,10 @@ func (o *NewInspectOption) PruneToc() bool {
 //
 // You may analyze or manipulate the table of contents before rendering it.
 func Inspect(n ast.Node, src []byte, opts ...InspectOption) (*TOC, error) {
+	if len(opts) > 1 {
+		return nil, fmt.Errorf("provide at most one opts object")
+	}
+
 	appendChild := func(n *Item) *Item {
 		child := new(Item)
 		n.Items = append(n.Items, child)
@@ -102,13 +108,16 @@ func Inspect(n ast.Node, src []byte, opts ...InspectOption) (*TOC, error) {
 		return ast.WalkSkipChildren, nil
 	})
 
-	// prune result
 	output := root.Items
-	for {
-		if len(output) < 1 || len(output) > 1 || len(output[0].Title) != 0 {
-			break
+
+	// prune result
+	if len(opts) > 0 && opts[0].PruneTOC() {
+		for {
+			if len(output) < 1 || len(output) > 1 || len(output[0].Title) != 0 {
+				break
+			}
+			output = output[0].Items
 		}
-		output = output[0].Items
 	}
 
 	return &TOC{Items: output}, err
