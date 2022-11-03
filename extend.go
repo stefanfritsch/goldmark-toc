@@ -11,15 +11,15 @@ import (
 //
 // To use this, install it into your Goldmark Markdown object.
 //
-//   md := goldmark.New(
-//     // ...
-//     goldmark.WithParserOptions(parser.WithAutoHeadingID()),
-//     goldmark.WithExtensions(
-//       // ...
-//       &toc.Extender{
-//       },
-//     ),
-//   )
+//	md := goldmark.New(
+//	  // ...
+//	  goldmark.WithParserOptions(parser.WithAutoHeadingID()),
+//	  goldmark.WithExtensions(
+//	    // ...
+//	    &toc.Extender{
+//	    },
+//	  ),
+//	)
 //
 // This will install the default Transformer. For more control, install the
 // Transformer directly on the Markdown Parser.
@@ -28,14 +28,17 @@ import (
 // need to enable the WithAutoHeadingID option on the parser to generate IDs
 // and links for headings.
 type Extender struct {
+	Title     string
+	AddFences bool
+	FencesID  string
 }
 
 // Extend adds support for rendering a table of contents to the provided
 // Markdown parser/renderer.
-func (*Extender) Extend(md goldmark.Markdown) {
+func (e *Extender) Extend(md goldmark.Markdown) {
 	md.Parser().AddOptions(
 		parser.WithASTTransformers(
-			util.Prioritized(&Transformer{}, 100),
+			util.Prioritized(&Transformer{Title: e.Title, AddFences: e.AddFences, FencesID: e.FencesID}, 100),
 		),
 	)
 }

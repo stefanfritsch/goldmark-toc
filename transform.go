@@ -29,7 +29,9 @@ const _defaultTitle = "Table of Contents"
 type Transformer struct {
 	// Title is the title of the table of contents section.
 	// Defaults to "Table of Contents" if unspecified.
-	Title string
+	Title     string
+	AddFences bool
+	FencesID  string
 }
 
 var _ parser.ASTTransformer = (*Transformer)(nil) // interface compliance
@@ -51,9 +53,16 @@ func (t *Transformer) Transform(doc *ast.Document, reader text.Reader, pctx pars
 		return
 	}
 
-	if true {
+	if t.AddFences {
+		var fid string
+
+		if t.FencesID == "" {
+			fid = "md-toc"
+		} else {
+			fid = t.FencesID
+		}
 		node := fences.NewFencedContainer()
-		node.SetAttributeString("id", []byte("md-toc"))
+		node.SetAttributeString("id", []byte(fid))
 		node.SetAttributeString("class", []byte("toc nav elem-nav"))
 		insertTOC(node, toc, t.Title)
 
