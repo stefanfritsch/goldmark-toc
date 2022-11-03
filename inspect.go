@@ -10,7 +10,15 @@ import (
 // This type is currently just a placeholder to prevent breaking changes to
 // the API in the future. There are no InspectOptions at this time.
 type InspectOption interface {
-	unimplemented()
+	PruneToc() bool
+}
+
+type NewInspectOption struct {
+	pruneToc bool
+}
+
+func (o *NewInspectOption) PruneToc() bool {
+	return o.pruneToc
 }
 
 // Inspect builds a table of contents by inspecting the provided document.
@@ -20,28 +28,28 @@ type InspectOption interface {
 //
 // For example,
 //
-//  # Section 1
-//  ## Subsection 1.1
-//  ## Subsection 1.2
-//  # Section 2
-//  ## Subsection 2.1
-//  # Section 3
+//	# Section 1
+//	## Subsection 1.1
+//	## Subsection 1.2
+//	# Section 2
+//	## Subsection 2.1
+//	# Section 3
 //
 // Will result in the following items.
 //
-//  TOC{Items: ...}
-//   |
-//   +--- &Item{Title: "Section 1", ID: "section-1", Items: ...}
-//   |     |
-//   |     +--- &Item{Title: "Subsection 1.1", ID: "subsection-1-1"}
-//   |     |
-//   |     +--- &Item{Title: "Subsection 1.2", ID: "subsection-1-2"}
-//   |
-//   +--- &Item{Title: "Section 2", ID: "section-2", Items: ...}
-//   |     |
-//   |     +--- &Item{Title: "Subsection 2.1", ID: "subsection-2-1"}
-//   |
-//   +--- &Item{Title: "Section 3", ID: "section-3"}
+//	TOC{Items: ...}
+//	 |
+//	 +--- &Item{Title: "Section 1", ID: "section-1", Items: ...}
+//	 |     |
+//	 |     +--- &Item{Title: "Subsection 1.1", ID: "subsection-1-1"}
+//	 |     |
+//	 |     +--- &Item{Title: "Subsection 1.2", ID: "subsection-1-2"}
+//	 |
+//	 +--- &Item{Title: "Section 2", ID: "section-2", Items: ...}
+//	 |     |
+//	 |     +--- &Item{Title: "Subsection 2.1", ID: "subsection-2-1"}
+//	 |
+//	 +--- &Item{Title: "Section 3", ID: "section-3"}
 //
 // You may analyze or manipulate the table of contents before rendering it.
 func Inspect(n ast.Node, src []byte, opts ...InspectOption) (*TOC, error) {
@@ -94,5 +102,14 @@ func Inspect(n ast.Node, src []byte, opts ...InspectOption) (*TOC, error) {
 		return ast.WalkSkipChildren, nil
 	})
 
-	return &TOC{Items: root.Items}, err
+	// prune result
+	output := root.Items
+	for {
+		if len(output) < 1 || len(output) > 1 || len(output[0].Title) != 0 {
+			break
+		}
+		output = output[0].Items
+	}
+
+	return &TOC{Items: output}, err
 }
